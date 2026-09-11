@@ -39,9 +39,37 @@ const env = {
   AUTH_RATE_LIMIT_MAX: parseInt(process.env.AUTH_RATE_LIMIT_MAX, 10) || 20,
   UPLOAD_RATE_LIMIT_MAX: parseInt(process.env.UPLOAD_RATE_LIMIT_MAX, 10) || 30,
 
-  // Upload
+  // Upload limits
   MAX_FILE_SIZE_MB: parseInt(process.env.MAX_FILE_SIZE_MB, 10) || 5,
   MAX_FILES_PER_UPLOAD: parseInt(process.env.MAX_FILES_PER_UPLOAD, 10) || 5,
+
+  // ─── AI Image Processing ──────────────────────────────────────────────────
+  // Local sharp processing — always available (no API key needed)
+  AI_IMAGE_MAX_SIZE_MB: parseInt(process.env.AI_IMAGE_MAX_SIZE_MB, 10) || 10,
+
+  // Background removal provider: 'removebg' | 'none'
+  IMAGE_BG_REMOVAL_PROVIDER: process.env.IMAGE_BG_REMOVAL_PROVIDER || 'none',
+  REMOVEBG_API_KEY: process.env.REMOVEBG_API_KEY || '',
+
+  // ─── AI Voice / Speech-to-Text ────────────────────────────────────────────
+  // Provider: 'google' | 'none'
+  VOICE_PROVIDER: process.env.VOICE_PROVIDER || 'none',
+  GOOGLE_SPEECH_API_KEY: process.env.GOOGLE_SPEECH_API_KEY || '',
+  // Comma-separated BCP-47 language codes
+  GOOGLE_SPEECH_LANGUAGE_CODES: process.env.GOOGLE_SPEECH_LANGUAGE_CODES || 'hi-IN,gu-IN,en-IN',
+  AI_AUDIO_MAX_SIZE_MB: parseInt(process.env.AI_AUDIO_MAX_SIZE_MB, 10) || 25,
+  AI_AUDIO_MAX_DURATION_SEC: parseInt(process.env.AI_AUDIO_MAX_DURATION_SEC, 10) || 300,
+
+  // ─── AI Catalog / Description (Google Gemini) ─────────────────────────────
+  // Provider: 'gemini' | 'none'
+  CATALOG_PROVIDER: process.env.CATALOG_PROVIDER || 'none',
+  GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
+  GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-1.5-flash',
+
+  // ─── Market Price Data ────────────────────────────────────────────────────
+  // Provider: 'none' (extendable — plug in a market API later)
+  MARKET_DATA_PROVIDER: process.env.MARKET_DATA_PROVIDER || 'none',
+  MARKET_DATA_API_KEY: process.env.MARKET_DATA_API_KEY || '',
 
   get isProduction() {
     return this.NODE_ENV === 'production';

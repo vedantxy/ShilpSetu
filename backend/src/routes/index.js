@@ -90,7 +90,18 @@ router.get('/dashboard/analytics', authMiddleware, requireSeller, dashboardContr
 router.post('/upload/images', authMiddleware, uploadLimiter, uploadController.uploadMultiple);
 router.delete('/upload/images', authMiddleware, uploadController.deleteImage);
 
-// ─── AI Routes ────────────────────────────────────────────────────────────────
+// ─── AI Sub-Routers ───────────────────────────────────────────────────────────
+const imageRoutes = require('./imageRoutes');
+const voiceRoutes = require('./voiceRoutes');
+const catalogRoutes = require('./catalogRoutes');
+const pricingRoutes = require('./pricingRoutes');
+
+router.use('/ai/image', imageRoutes);
+router.use('/ai/voice', voiceRoutes);
+router.use('/ai/catalog', catalogRoutes);
+router.use('/ai/pricing', pricingRoutes);
+
+// ─── Legacy AI Routes (backward-compatible) ──────────────────────────────────
 router.post('/ai/generate-description', authMiddleware, requireSeller, validateRequest(generateDescriptionSchema), aiController.generateDescription);
 router.post('/ai/price-suggestion', authMiddleware, requireSeller, validateRequest(priceSuggestionSchema), aiController.priceSuggestion);
 router.post('/ai/image-enhance', authMiddleware, requireSeller, validateRequest(imageEnhanceSchema), aiController.imageEnhance);
