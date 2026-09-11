@@ -62,6 +62,13 @@ function createApp() {
     });
   });
 
+  // ─── Static Files for Local Storage Provider ─────────────────────────────
+  app.use('/uploads', express.static(env.STORAGE_LOCAL_DIR));
+
+  // ─── Initialize Domain Event Subscribers ──────────────────────────────────
+  const { initializeNotificationSubscriber } = require('./events/subscribers/notificationSubscriber');
+  initializeNotificationSubscriber();
+
   // ─── API Routes ───────────────────────────────────────────────────────────
   app.use('/api', router);
 

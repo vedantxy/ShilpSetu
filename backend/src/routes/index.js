@@ -107,8 +107,17 @@ router.post('/ai/price-suggestion', authMiddleware, requireSeller, validateReque
 router.post('/ai/image-enhance', authMiddleware, requireSeller, validateRequest(imageEnhanceSchema), aiController.imageEnhance);
 router.post('/ai/speech-to-text', authMiddleware, requireSeller, aiController.speechToText);
 
+// ─── Media Routes ─────────────────────────────────────────────────────────────
+const mediaRoutes = require('./mediaRoutes');
+router.use('/media', mediaRoutes);
+
+// ─── Notification Routes ──────────────────────────────────────────────────────
+const notificationRoutes = require('./notificationRoutes');
+router.use('/notifications', notificationRoutes);
+
 // ─── Admin Routes ─────────────────────────────────────────────────────────────
 // Internally gated with authMiddleware + requireAdmin
 router.use('/admin', adminRoutes);
 
 module.exports = router;
+

@@ -66,10 +66,13 @@ const env = {
   GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
   GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-1.5-flash',
 
-  // ─── Market Price Data ────────────────────────────────────────────────────
-  // Provider: 'none' (extendable — plug in a market API later)
-  MARKET_DATA_PROVIDER: process.env.MARKET_DATA_PROVIDER || 'none',
-  MARKET_DATA_API_KEY: process.env.MARKET_DATA_API_KEY || '',
+  // ─── Cloud Storage ───────────────────────────────────────────────────────
+  // Provider: 'supabase' | 'local'
+  STORAGE_PROVIDER: process.env.STORAGE_PROVIDER || 'supabase',
+  STORAGE_LOCAL_DIR: process.env.STORAGE_LOCAL_DIR || path.resolve(__dirname, '../../uploads'),
+
+  // ─── Push Notifications ───────────────────────────────────────────────────
+  EXPO_ACCESS_TOKEN: process.env.EXPO_ACCESS_TOKEN || '',
 
   get isProduction() {
     return this.NODE_ENV === 'production';

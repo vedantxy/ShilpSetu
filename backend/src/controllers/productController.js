@@ -124,6 +124,16 @@ const productController = {
       }
 
       const product = await productService.updateStatus(req.params.id, 'published');
+
+      // Publish domain event
+      const eventBus = require('../events/eventBus');
+      const EventTypes = require('../events/eventTypes');
+      eventBus.publish(EventTypes.PRODUCT_PUBLISHED, {
+        sellerId: product.seller_id,
+        productId: product.id,
+        productTitle: product.title,
+      });
+
       return sendSuccess(res, 'Product published successfully', product);
     } catch (err) {
       next(err);

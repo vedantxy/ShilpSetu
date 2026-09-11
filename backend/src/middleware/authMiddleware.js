@@ -77,4 +77,38 @@ async function authMiddleware(req, _res, next) {
   }
 }
 
+/**
+ * Optional authentication middleware.
+ * If Bearer token is provided, validates and sets req.user & req.profile.
+ * If not provided, proceeds without error.
+ */
+async function optionalAuth(req, _res, next) {
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return next();
+    }
+    const token = authHeader.split(' ')[1];
+    if (!token) return next();
+
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    if (authError || !user) return next();
+
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    req.user = user;
+    req.profile = profile || null;
+    req.accessToken = token;
+    next();
+  } catch {
+    next();
+  }
+}
+
 module.exports = authMiddleware;
+module.exports.optionalAuth = optionalAuth;
+

@@ -5,6 +5,8 @@ const auditLogService = require('../services/auditLogService');
 const adminAnalyticsService = require('../services/adminAnalyticsService');
 const adminNotificationService = require('../services/adminNotificationService');
 const categoryService = require('../services/categoryService');
+const eventBus = require('../events/eventBus');
+const EventTypes = require('../events/eventTypes');
 const { sendSuccess, sendCreated } = require('../utils/responseHandler');
 const ApiError = require('../utils/apiError');
 const logger = require('../utils/logger');
@@ -215,6 +217,12 @@ const adminController = {
 
       const artisan = await adminService.verifyArtisan(id);
 
+      // Publish domain event
+      eventBus.publish(EventTypes.ARTISAN_VERIFIED, {
+        artisanId: id,
+        craftName: artisan.craft_name,
+      });
+
       await auditLogService.record({
         adminId: req.profile.id,
         action: 'verify_artisan',
@@ -241,6 +249,12 @@ const adminController = {
       const { reason, notes } = req.body;
 
       const artisan = await adminService.rejectArtisan(id, reason);
+
+      // Publish domain event
+      eventBus.publish(EventTypes.ARTISAN_REJECTED, {
+        artisanId: id,
+        reason,
+      });
 
       await auditLogService.record({
         adminId: req.profile.id,
@@ -351,6 +365,13 @@ const adminController = {
       const { id } = req.params;
       const product = await adminService.approveProduct(id);
 
+      // Publish domain event
+      eventBus.publish(EventTypes.PRODUCT_PUBLISHED, {
+        sellerId: product.seller_id,
+        productId: product.id,
+        productTitle: product.title,
+      });
+
       await auditLogService.record({
         adminId: req.profile.id,
         action: 'approve_product',
@@ -377,6 +398,14 @@ const adminController = {
       const { reason, notes } = req.body;
 
       const product = await adminService.rejectProduct(id, reason);
+
+      // Publish domain event
+      eventBus.publish(EventTypes.PRODUCT_REJECTED, {
+        sellerId: product.seller_id,
+        productId: product.id,
+        productTitle: product.title,
+        reason,
+      });
 
       await auditLogService.record({
         adminId: req.profile.id,
@@ -635,6 +664,14 @@ const adminController = {
       const { status, notes } = req.body;
 
       const order = await adminService.updateOrderStatus(id, status);
+
+      // Publish domain event
+      eventBus.publish(EventTypes.ORDER_STATUS_UPDATED, {
+        orderId: order.id,
+        orderNumber: order.order_number,
+        buyerId: order.buyer_id,
+        status,
+      });
 
       await auditLogService.record({
         adminId: req.profile.id,
