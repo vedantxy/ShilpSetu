@@ -81,6 +81,44 @@ const categoryService = {
 
     return true;
   },
+
+  /**
+   * Activate a category (admin only) — sets is_active=true.
+   */
+  async activate(categoryId) {
+    const { data, error } = await supabaseAdmin
+      .from('categories')
+      .update({ is_active: true })
+      .eq('id', categoryId)
+      .select()
+      .single();
+
+    if (error) {
+      logger.error(`Category activate failed for ${categoryId}: ${error.message}`);
+      throw error;
+    }
+
+    return data;
+  },
+
+  /**
+   * Deactivate a category (admin only) — sets is_active=false.
+   */
+  async deactivate(categoryId) {
+    const { data, error } = await supabaseAdmin
+      .from('categories')
+      .update({ is_active: false })
+      .eq('id', categoryId)
+      .select()
+      .single();
+
+    if (error) {
+      logger.error(`Category deactivate failed for ${categoryId}: ${error.message}`);
+      throw error;
+    }
+
+    return data;
+  },
 };
 
 module.exports = categoryService;
