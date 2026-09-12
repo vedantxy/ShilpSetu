@@ -1,0 +1,302 @@
+openapi: 3.0.3
+info:
+  title: ShilpSetu API
+  description: >
+    Enterprise REST API for ShilpSetu — AI-Driven Market Linkage, Smart Cataloging,
+    Multilingual Storytelling, and Fair Pricing Platform for Indian Artisans.
+  version: 1.0.0
+  contact:
+    name: ShilpSetu Team
+    url: https://shilpsetu.org
+servers:
+  - url: http://localhost:5000/api/v1
+    description: Local Development Server (v1)
+  - url: http://localhost:5000/api
+    description: Local Development Server (unversioned alias)
+  - url: https://api.shilpsetu.org/v1
+    description: Production Server
+
+paths:
+  /health:
+    get:
+      summary: Service Health Check
+      description: Returns health status of server, database connection, storage, and AI providers.
+      responses:
+        '200':
+          description: Service is healthy
+
+  /auth/register:
+    post:
+      summary: Register User
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+                fullName: { type: string }
+                role: { type: string, enum: [buyer, seller] }
+      responses:
+        '201':
+          description: User registered successfully
+
+  /auth/login:
+    post:
+      summary: Login User
+      tags: [Authentication]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        '200':
+          description: Authenticated successfully
+
+  /products/marketplace:
+    get:
+      summary: Browse Published Marketplace Products
+      tags: [Products & Marketplace]
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, default: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20, maximum: 100 }
+        - name: category
+          in: query
+          schema: { type: string }
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: minPrice
+          in: query
+          schema: { type: number }
+        - name: maxPrice
+          in: query
+          schema: { type: number }
+      responses:
+        '200':
+          description: Published products retrieved
+
+  /products:
+    get:
+      summary: Get Seller's Products
+      tags: [Seller Products]
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200':
+          description: Seller products list
+    post:
+      summary: Create New Product (Draft)
+      tags: [Seller Products]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title: { type: string }
+                description: { type: string }
+                price: { type: number }
+                category: { type: string }
+                images: { type: array, items: { type: string } }
+      responses:
+        '201':
+          description: Product draft created
+
+  /products/{id}/publish:
+    patch:
+      summary: Publish Product to Marketplace
+      tags: [Seller Products]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Product published
+
+  /media/image:
+    post:
+      summary: Upload Image Media
+      tags: [Media & Uploads]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image: { type: string, format: binary }
+                productId: { type: string, format: uuid }
+      responses:
+        '201':
+          description: Media uploaded and validated
+
+  /ai/image/enhance:
+    post:
+      summary: Enhance Craft Image
+      tags: [AI Image Processing]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                image: { type: string, format: binary }
+                sharpen: { type: number, default: 1 }
+                contrast: { type: number, default: 1.1 }
+      responses:
+        '200':
+          description: Image enhanced with sharp
+
+  /ai/voice/transcribe:
+    post:
+      summary: Transcribe Regional Craft Speech
+      tags: [AI Voice & Speech]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                audio: { type: string, format: binary }
+                languageCode: { type: string, default: 'hi-IN' }
+      responses:
+        '201':
+          description: Speech transcribed and keywords extracted
+
+  /ai/catalog/generate:
+    post:
+      summary: Generate AI Craft Story & Product Catalog
+      tags: [AI Catalog Storytelling]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                craftName: { type: string }
+                category: { type: string }
+                materials: { type: string }
+                technique: { type: string }
+                notes: { type: string }
+                image: { type: string, format: binary }
+      responses:
+        '201':
+          description: Catalog draft generated
+
+  /ai/pricing/calculate:
+    post:
+      summary: Deterministic Fair Price Calculator
+      tags: [AI Pricing Assistant]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                materialCost: { type: number, default: 0 }
+                laborHours: { type: number }
+                hourlyRate: { type: number }
+                packagingCost: { type: number }
+                shippingCost: { type: number }
+                category: { type: string }
+      responses:
+        '201':
+          description: Pricing calculation and market benchmarks
+
+  /orders:
+    post:
+      summary: Place an Order
+      tags: [Orders]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [productId]
+              properties:
+                productId: { type: string, format: uuid }
+                quantity: { type: integer, default: 1 }
+                shippingAddress: { type: object }
+                paymentMethod: { type: string, enum: [online, cod] }
+      responses:
+        '201':
+          description: Order placed
+
+  /notifications:
+    get:
+      summary: Get User Notifications
+      tags: [Notifications]
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200':
+          description: Notifications feed
+
+  /analytics/seller:
+    get:
+      summary: Seller Performance Analytics
+      tags: [Analytics]
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200':
+          description: Real aggregation of views, saves, orders, revenue
+
+  /admin/dashboard:
+    get:
+      summary: Admin Dashboard Overview
+      tags: [Admin Panel]
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200':
+          description: Platform KPIs and moderation queues
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        message: { type: string }
+        data: { type: object }
+    ApiError:
+      type: object
+      properties:
+        success: { type: boolean, default: false }
+        message: { type: string }
+        errorCode: { type: string }
+        errors: { type: array, items: { type: object } }

@@ -1,0 +1,177 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "ShilpSetu API",
+    "description": "Enterprise REST API for ShilpSetu — AI-Driven Market Linkage, Smart Cataloging, Multilingual Storytelling, and Fair Pricing Platform for Indian Artisans.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "ShilpSetu Team",
+      "url": "https://shilpsetu.org"
+    }
+  },
+  "servers": [
+    { "url": "/api/v1", "description": "Version 1 API Base" },
+    { "url": "/api", "description": "Standard API Base" }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Service Health Check",
+        "tags": ["System"],
+        "responses": { "200": { "description": "Service is healthy and dependencies verified" } }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "summary": "Register New User / Artisan",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" },
+                  "fullName": { "type": "string" },
+                  "role": { "type": "string", "enum": ["buyer", "seller"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "201": { "description": "User profile created" } }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "User Login",
+        "tags": ["Authentication"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["email", "password"],
+                "properties": {
+                  "email": { "type": "string" },
+                  "password": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Returns access token & user profile" } }
+      }
+    },
+    "/products/marketplace": {
+      "get": {
+        "summary": "Public Marketplace Catalog",
+        "tags": ["Products & Marketplace"],
+        "parameters": [
+          { "name": "page", "in": "query", "schema": { "type": "integer" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer", "maximum": 100 } },
+          { "name": "category", "in": "query", "schema": { "type": "string" } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": { "200": { "description": "Paginated published products" } }
+      }
+    },
+    "/products": {
+      "get": {
+        "summary": "Get Seller Products",
+        "tags": ["Seller Products"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "List of seller products" } }
+      },
+      "post": {
+        "summary": "Create Product Draft",
+        "tags": ["Seller Products"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "201": { "description": "Product draft created" } }
+      }
+    },
+    "/ai/image/enhance": {
+      "post": {
+        "summary": "AI Image Enhancement (Sharp Native)",
+        "tags": ["AI Image Processing"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Enhanced WebP image output" } }
+      }
+    },
+    "/ai/voice/transcribe": {
+      "post": {
+        "summary": "Transcribe Regional Speech (Hindi, Gujarati, English)",
+        "tags": ["AI Voice & Speech"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "201": { "description": "Transcription and craft keywords" } }
+      }
+    },
+    "/ai/catalog/generate": {
+      "post": {
+        "summary": "Generate AI Craft Story & Product Catalog",
+        "tags": ["AI Catalog Storytelling"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "201": { "description": "Structured catalog and craft stories" } }
+      }
+    },
+    "/ai/pricing/calculate": {
+      "post": {
+        "summary": "Deterministic Fair Pricing Calculator",
+        "tags": ["AI Pricing Assistant"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "201": { "description": "Price tiers and market benchmarks" } }
+      }
+    },
+    "/orders": {
+      "post": {
+        "summary": "Place Buyer Order",
+        "tags": ["Orders"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "201": { "description": "Order created and events dispatched" } }
+      },
+      "get": {
+        "summary": "List User Orders",
+        "tags": ["Orders"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "User order history" } }
+      }
+    },
+    "/notifications": {
+      "get": {
+        "summary": "Get In-App Notifications Feed",
+        "tags": ["Notifications"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Notification feed" } }
+      }
+    },
+    "/analytics/seller": {
+      "get": {
+        "summary": "Seller Business Analytics",
+        "tags": ["Analytics"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Views, saves, orders, revenue" } }
+      }
+    },
+    "/admin/dashboard": {
+      "get": {
+        "summary": "Admin KPI Dashboard",
+        "tags": ["Admin Panel"],
+        "security": [{ "BearerAuth": [] }],
+        "responses": { "200": { "description": "Platform telemetry and moderation queues" } }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

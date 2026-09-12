@@ -109,6 +109,22 @@ router.post('/ai/price-suggestion', authMiddleware, requireSeller, validateReque
 router.post('/ai/image-enhance', authMiddleware, requireSeller, validateRequest(imageEnhanceSchema), aiController.imageEnhance);
 router.post('/ai/speech-to-text', authMiddleware, requireSeller, aiController.speechToText);
 
+// ─── Commerce & Orders Routes ────────────────────────────────────────────────
+const orderRoutes = require('./orderRoutes');
+router.use('/orders', orderRoutes);
+
+// ─── Cart Routes ──────────────────────────────────────────────────────────────
+const cartRoutes = require('./cartRoutes');
+router.use('/cart', cartRoutes);
+
+// ─── Saved / Wishlist Routes ──────────────────────────────────────────────────
+const savedRoutes = require('./savedRoutes');
+router.use('/saved', savedRoutes);
+
+// ─── Inquiries Routes ─────────────────────────────────────────────────────────
+const inquiryRoutes = require('./inquiryRoutes');
+router.use('/inquiries', inquiryRoutes);
+
 // ─── Media Routes ─────────────────────────────────────────────────────────────
 const mediaRoutes = require('./mediaRoutes');
 router.use('/media', mediaRoutes);
@@ -126,5 +142,6 @@ router.use('/analytics', analyticsRoutes);
 router.use('/admin', adminRoutes);
 
 module.exports = router;
+
 
 

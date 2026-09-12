@@ -76,16 +76,40 @@ function createApp() {
   app.use(generalLimiter);
 
   // ─── Health check (no auth required) ─────────────────────────────────────
-  app.get('/health', (_req, res) => {
+  const healthHandler = async (_req, res) => {
+    const { supabaseAdmin } = require('./config/supabase');
+    let dbStatus = 'connected';
+
+    try {
+      const { error } = await supabaseAdmin.from('profiles').select('id', { head: true, count: 'exact' }).limit(1);
+      if (error && error.code !== 'PGRST116') {
+        dbStatus = 'degraded';
+      }
+    } catch {
+      dbStatus = 'disconnected';
+    }
+
     res.status(200).json({
       success: true,
-      status: 'healthy',
+      status: dbStatus === 'connected' ? 'healthy' : 'degraded',
       service: 'ShilpSetu API',
       version: '1.0.0',
-      timestamp: new Date().toISOString(),
       environment: env.NODE_ENV,
+      uptimeSeconds: parseFloat(process.uptime().toFixed(2)),
+      timestamp: new Date().toISOString(),
+      dependencies: {
+        database: dbStatus,
+        storage: env.STORAGE_PROVIDER,
+        ai: env.CATALOG_PROVIDER !== 'none' ? 'configured' : 'fallback',
+        voice: env.VOICE_PROVIDER !== 'none' ? 'configured' : 'fallback',
+      },
     });
-  });
+  };
+
+  app.get('/health', healthHandler);
+  app.get('/api/health', healthHandler);
+  app.get('/api/v1/health', healthHandler);
+  app.get('/v1/health', healthHandler);
 
   // ─── Static Files for Local Storage Provider ─────────────────────────────
   app.use('/uploads', express.static(env.STORAGE_LOCAL_DIR));
@@ -94,8 +118,21 @@ function createApp() {
   const { initializeNotificationSubscriber } = require('./events/subscribers/notificationSubscriber');
   initializeNotificationSubscriber();
 
-  // ─── API Routes ───────────────────────────────────────────────────────────
+  // ─── API Documentation (Swagger UI) ─────────────────────────────────────
+  try {
+    const swaggerUi = require('swagger-ui-express');
+    const swaggerDocument = require('../docs/swagger.json');
+    app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+    app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+  } catch (swaggerErr) {
+    logger.warn(`Swagger UI initialization skipped: ${swaggerErr.message}`);
+  }
+
+  // ─── API Routes (Versioning support: /api, /api/v1, /v1) ─────────────────
+  app.use('/api/v1', router);
   app.use('/api', router);
+  app.use('/v1', router);
+
 
   // ─── 404 handler ─────────────────────────────────────────────────────────
   app.use(notFoundHandler);
