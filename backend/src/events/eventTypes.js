@@ -1,27 +1,40 @@
 'use strict';
 
 /**
- * Domain Event Types for ShilpSetu Event-Driven Architecture.
+ * Domain & Telemetry Event Types for ShilpSetu.
  */
 const EventTypes = {
-  // Product Lifecycle
-  PRODUCT_PUBLISHED: 'product.published',
-  PRODUCT_REJECTED: 'product.rejected',
-  PRODUCT_FEATURED: 'product.featured',
+  // User Authentication & Identity
+  USER_REGISTERED: 'USER_REGISTERED',
+  USER_LOGIN: 'USER_LOGIN',
 
-  // Artisan Lifecycle
-  ARTISAN_VERIFIED: 'artisan.verified',
-  ARTISAN_REJECTED: 'artisan.rejected',
-  ARTISAN_SUSPENDED: 'artisan.suspended',
+  // Product Lifecycle & Interaction
+  PRODUCT_CREATED: 'PRODUCT_CREATED',
+  PRODUCT_VIEWED: 'PRODUCT_VIEWED',
+  PRODUCT_SAVED: 'PRODUCT_SAVED',
+  PRODUCT_PUBLISHED: 'PRODUCT_PUBLISHED',
+  PRODUCT_REJECTED: 'PRODUCT_REJECTED',
+  PRODUCT_FEATURED: 'PRODUCT_FEATURED',
 
-  // Order Lifecycle
-  ORDER_CREATED: 'order.created',
-  ORDER_STATUS_UPDATED: 'order.status_updated',
-  PAYMENT_UPDATED: 'payment.updated',
+  // Commerce & Cart
+  CART_ADDED: 'CART_ADDED',
+  ORDER_CREATED: 'ORDER_CREATED',
+  ORDER_COMPLETED: 'ORDER_COMPLETED',
+  ORDER_STATUS_UPDATED: 'ORDER_STATUS_UPDATED',
+  PAYMENT_UPDATED: 'PAYMENT_UPDATED',
 
-  // Communication & System
-  INQUIRY_RECEIVED: 'inquiry.received',
-  SYSTEM_ANNOUNCEMENT: 'system.announcement',
+  // AI & Intelligence
+  AI_CATALOG_GENERATED: 'AI_CATALOG_GENERATED',
+  PRICE_ANALYZED: 'PRICE_ANALYZED',
+
+  // Artisan Verification
+  ARTISAN_VERIFIED: 'ARTISAN_VERIFIED',
+  ARTISAN_REJECTED: 'ARTISAN_REJECTED',
+  ARTISAN_SUSPENDED: 'ARTISAN_SUSPENDED',
+
+  // Communication
+  INQUIRY_RECEIVED: 'INQUIRY_RECEIVED',
+  SYSTEM_ANNOUNCEMENT: 'SYSTEM_ANNOUNCEMENT',
 };
 
 module.exports = EventTypes;

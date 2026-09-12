@@ -1,3 +1,7 @@
+'use strict';
+
+const ErrorCodes = require('./errorCodes');
+
 /**
  * Standardized API response helpers.
  * Every endpoint returns a consistent JSON envelope.
@@ -26,16 +30,18 @@ function sendCreated(res, message = 'Resource created successfully', data = {}) 
 }
 
 /**
- * Send an error response.
+ * Send an error response with standardized error code.
  * @param {import('express').Response} res
  * @param {string} message
  * @param {number} statusCode
  * @param {Array} errors
+ * @param {string} errorCode
  */
-function sendError(res, message = 'Something went wrong', statusCode = 500, errors = []) {
+function sendError(res, message = 'Something went wrong', statusCode = 500, errors = [], errorCode = ErrorCodes.INTERNAL_ERROR) {
   return res.status(statusCode).json({
     success: false,
     message,
+    errorCode,
     errors,
   });
 }

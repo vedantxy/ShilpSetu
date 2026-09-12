@@ -91,11 +91,13 @@ router.post('/upload/images', authMiddleware, uploadLimiter, uploadController.up
 router.delete('/upload/images', authMiddleware, uploadController.deleteImage);
 
 // ─── AI Sub-Routers ───────────────────────────────────────────────────────────
+const { aiLimiter } = require('../middleware/rateLimiter');
 const imageRoutes = require('./imageRoutes');
 const voiceRoutes = require('./voiceRoutes');
 const catalogRoutes = require('./catalogRoutes');
 const pricingRoutes = require('./pricingRoutes');
 
+router.use('/ai', aiLimiter);
 router.use('/ai/image', imageRoutes);
 router.use('/ai/voice', voiceRoutes);
 router.use('/ai/catalog', catalogRoutes);
@@ -115,9 +117,14 @@ router.use('/media', mediaRoutes);
 const notificationRoutes = require('./notificationRoutes');
 router.use('/notifications', notificationRoutes);
 
+// ─── Analytics Routes ─────────────────────────────────────────────────────────
+const analyticsRoutes = require('./analyticsRoutes');
+router.use('/analytics', analyticsRoutes);
+
 // ─── Admin Routes ─────────────────────────────────────────────────────────────
 // Internally gated with authMiddleware + requireAdmin
 router.use('/admin', adminRoutes);
 
 module.exports = router;
+
 

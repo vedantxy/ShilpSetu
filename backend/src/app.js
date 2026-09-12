@@ -9,7 +9,9 @@ const { env } = require('./config/env');
 const router = require('./routes/index');
 const errorHandler = require('./middleware/errorHandler');
 const notFoundHandler = require('./middleware/notFoundHandler');
+const requestId = require('./middleware/requestId');
 const requestLogger = require('./middleware/requestLogger');
+const sanitizeInput = require('./middleware/sanitizeInput');
 const { generalLimiter } = require('./middleware/rateLimiter');
 const logger = require('./utils/logger');
 
@@ -20,8 +22,29 @@ const logger = require('./utils/logger');
 function createApp() {
   const app = express();
 
-  // ─── Security headers ──────────────────────────────────────────────────────
-  app.use(helmet());
+  // ─── Trust proxy (for load balancers, rate limiting, and IP extraction) ────
+  app.set('trust proxy', 1);
+
+  // ─── Request ID (Tracing) ──────────────────────────────────────────────────
+  app.use(requestId);
+
+  // ─── Security headers (Helmet) ─────────────────────────────────────────────
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+          fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+          imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
+          connectSrc: ["'self'", env.SUPABASE_URL, 'https://exp.host'],
+        },
+      },
+      crossOriginEmbedderPolicy: false,
+      hsts: env.isProduction ? { maxAge: 31536000, includeSubDomains: true } : false,
+    })
+  );
 
   // ─── CORS ─────────────────────────────────────────────────────────────────
   app.use(
@@ -29,22 +52,24 @@ function createApp() {
       origin: [env.FRONTEND_URL, 'http://localhost:3000', 'http://localhost:5173'],
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-Id'],
+      exposedHeaders: ['X-Request-Id'],
     })
   );
 
-  // ─── Body parsers ─────────────────────────────────────────────────────────
-  app.use(express.json({ limit: '10mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+  // ─── Body parsers (strict limits) ─────────────────────────────────────────
+  app.use(express.json({ limit: '2mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+
+  // ─── Input Sanitization (NoSQL/SQL injection & XSS defense) ───────────────
+  app.use(sanitizeInput);
 
   // ─── HTTP logging ─────────────────────────────────────────────────────────
   if (env.isDevelopment) {
     app.use(morgan('dev'));
-  } else {
-    app.use(morgan('combined'));
   }
 
-  // ─── Request logger (custom structured logging) ───────────────────────────
+  // ─── Request logger (structured logging with credential redaction) ────────
   app.use(requestLogger);
 
   // ─── Global rate limiter ──────────────────────────────────────────────────
@@ -78,7 +103,7 @@ function createApp() {
   // ─── Global error handler ─────────────────────────────────────────────────
   app.use(errorHandler);
 
-  logger.info('Express app configured');
+  logger.info('Express app configured with security hardening & observability');
 
   return app;
 }
